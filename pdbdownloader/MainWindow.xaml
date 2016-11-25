@@ -1,0 +1,53 @@
+﻿<Window x:Class="pdbdownloader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PdbDownloader" Height="545" Width="843" WindowStyle="SingleBorderWindow" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="23" />
+            <RowDefinition Height="362*" />
+            <RowDefinition Height="25" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+        </Grid.ColumnDefinitions>
+        <Menu Name="MainMenu">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Add File" Click="addFile_Click" />
+                <MenuItem Header="_Delete File" Click="deleteFile_Click" />
+                <MenuItem Header="_Set Symbol Path" Click="setSymbolPath_Click" />
+                <MenuItem Header="_Exit" Click="exit_Click"/>
+            </MenuItem>
+            <MenuItem Name="startMenuItem" Header="_Start" Click="start_Click"/>
+            <MenuItem Name="stopMenuItem" Header="S_top" IsEnabled="False" Click="stop_Click"/>
+        </Menu>
+        <ListView Grid.Row="1" Name="PdbListView" AllowDrop="True" Drop="PdbListView_Drop">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="_Add File" Click="addFile_Click" />
+                    <MenuItem Header="_Delete File" Click="deleteFile_Click" />
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.Resources>
+                <Style TargetType="{x:Type GridViewColumnHeader}">
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                </Style>
+            </ListView.Resources>
+            <ListView.View>
+                <GridView AllowsColumnReorder="True">
+                    <GridViewColumn Header="File path" Width="300" DisplayMemberBinding="{Binding Path=FilePath}" />
+                    <GridViewColumn Header="Pdb path" Width="300" DisplayMemberBinding="{Binding Path=PdbPath}" />
+                    <GridViewColumn Header="Progress" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Height="20" Value="{Binding Path=ProgressValue}" Minimum="0" SmallChange="1" Width="100" Foreground="{Binding Path=ProgressColor}"></ProgressBar>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StatusBar Grid.Row="2" Name="statusBar1">
+            <StatusBarItem Name="statusBarText" Content="" />
+        </StatusBar>
+    </Grid>
+</Window>
