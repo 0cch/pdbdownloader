@@ -201,78 +201,89 @@ namespace pdbdownloader
             IniFile ini = new IniFile(ConfigFile);
             int Timeout = 0;
             Int32.TryParse(ini.IniReadValue("Settings", "Timeout"), out Timeout);
-            if (Timeout == 0)
-            {
-                m_Downloader = new WebDownload();
-            }
-            else
-            {
-                m_Downloader = new WebDownload(Timeout);
-            }
-
-            AutoResetEvent ev = new AutoResetEvent(false);
             
-            m_Downloader.Headers.Add("user-agent", "Microsoft-Symbol-Server/10.0.10586.567");
-            m_Downloader.DownloadProgressChanged += (s, e) =>
-            {
-                statusBarText.Dispatcher.Invoke(new Action(() =>
-                {
-                    statusBarText.Content = "Download: " + String.Format("{0}/{1}({2}%) ",
-                        e.BytesReceived, e.TotalBytesToReceive, e.ProgressPercentage) + m_Items[m_DownloadIndex].PdbUrl;
-                }));
-                
-                m_Items[(int)e.UserState].ProgressValue = e.ProgressPercentage;
-            };
-
-            m_Downloader.DownloadFileCompleted += (s, e) =>
-            {
-                if (e.Cancelled)
-                {
-
-                }
-                else if (e.Error != null)
-                {
-                    m_Items[(int)e.UserState].ProgressColor = Brushes.Red;
-                }
-                else {
-                    StringBuilder sb = new StringBuilder(m_Items[(int)e.UserState].PdbPath);
-                    sb[sb.Length - 1] = '_';
-
-                    Process process = new Process();
-                    process.StartInfo.FileName = "expand.exe";
-                    process.StartInfo.Arguments = "expand.exe -R " + sb.ToString();
-                    process.StartInfo.CreateNoWindow = true;
-                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                    process.Start();
-                    process.WaitForExit();
-                    File.Delete(sb.ToString());
-
-                    m_Items[(int)e.UserState].ProgressColor = Brushes.Blue;
-                }
-                
-                ev.Set();
-            };
 
             for (m_DownloadIndex = 0; m_DownloadIndex < m_Items.Count; m_DownloadIndex++)
             {
-                SHCreateDirectoryEx(IntPtr.Zero, System.IO.Path.GetDirectoryName(m_Items[m_DownloadIndex].PdbPath), IntPtr.Zero);
-                StringBuilder sb = new StringBuilder(m_Items[m_DownloadIndex].PdbPath);
-                sb[sb.Length - 1] = '_';
-                statusBarText.Dispatcher.Invoke(new Action(() => { statusBarText.Content = "Download: " + m_Items[m_DownloadIndex].PdbUrl; }));
-                
-                m_Downloader.DownloadFileAsync(new Uri(m_Items[m_DownloadIndex].PdbUrl), sb.ToString(), m_DownloadIndex);
-
-                while (!ev.WaitOne(1000))
+                try
                 {
+                    if (Timeout == 0)
+                    {
+                        m_Downloader = new WebDownload();
+                    }
+                    else
+                    {
+                        m_Downloader = new WebDownload(Timeout);
+                    }
+
+                    AutoResetEvent ev = new AutoResetEvent(false);
+
+                    m_Downloader.Headers.Add("user-agent", "Microsoft-Symbol-Server/10.0.10586.567");
+                    m_Downloader.DownloadProgressChanged += (s, e) =>
+                    {
+                        statusBarText.Dispatcher.Invoke(new Action(() =>
+                        {
+                            statusBarText.Content = "Download: " + String.Format("{0}/{1}({2}%) ",
+                                e.BytesReceived, e.TotalBytesToReceive, e.ProgressPercentage) + m_Items[m_DownloadIndex].PdbUrl;
+                        }));
+
+                        m_Items[(int)e.UserState].ProgressValue = e.ProgressPercentage;
+                    };
+
+                    m_Downloader.DownloadFileCompleted += (s, e) =>
+                    {
+                        if (e.Cancelled)
+                        {
+
+                        }
+                        else if (e.Error != null)
+                        {
+                            m_Items[(int)e.UserState].ProgressColor = Brushes.Red;
+                        }
+                        else
+                        {
+                            StringBuilder cab = new StringBuilder(m_Items[(int)e.UserState].PdbPath);
+                            cab[cab.Length - 1] = '_';
+
+                            Process process = new Process();
+                            process.StartInfo.FileName = "expand.exe";
+                            process.StartInfo.Arguments = "expand.exe -R " + cab.ToString();
+                            process.StartInfo.CreateNoWindow = true;
+                            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                            process.Start();
+                            process.WaitForExit();
+                            File.Delete(cab.ToString());
+
+                            m_Items[(int)e.UserState].ProgressColor = Brushes.Blue;
+                        }
+
+                        ev.Set();
+                    };
+
+                    SHCreateDirectoryEx(IntPtr.Zero, System.IO.Path.GetDirectoryName(m_Items[m_DownloadIndex].PdbPath), IntPtr.Zero);
+                    StringBuilder sb = new StringBuilder(m_Items[m_DownloadIndex].PdbPath);
+                    sb[sb.Length - 1] = '_';
+                    statusBarText.Dispatcher.Invoke(new Action(() => { statusBarText.Content = "Download: " + m_Items[m_DownloadIndex].PdbUrl; }));
+
+                    m_Downloader.DownloadFileAsync(new Uri(m_Items[m_DownloadIndex].PdbUrl), sb.ToString(), m_DownloadIndex);
+
+                    while (!ev.WaitOne(1000))
+                    {
+                        if (m_StopDownload)
+                        {
+                            break;
+                        }
+                    }
+
                     if (m_StopDownload)
                     {
                         break;
                     }
+                
                 }
-
-                if (m_StopDownload)
+                finally
                 {
-                    break;
+                    m_Downloader.Dispose();
                 }
                 
             }
