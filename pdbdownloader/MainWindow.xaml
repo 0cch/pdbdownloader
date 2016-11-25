@@ -25,6 +25,7 @@
                 <ContextMenu>
                     <MenuItem Header="_Add File" Click="addFile_Click" />
                     <MenuItem Header="_Delete File" Click="deleteFile_Click" />
+                    <MenuItem Header="_Open Download Folder" Click="openDownloadFolder_Click" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.Resources>

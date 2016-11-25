@@ -54,7 +54,7 @@ namespace pdbdownloader
         public Int32 age;
     }
 
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IDisposable
     {
         
 
@@ -66,6 +66,11 @@ namespace pdbdownloader
             InitializeComponent();
             statusBarText.Content = "Ready";
             PdbListView.ItemsSource = m_Items;
+        }
+
+        public void Dispose()
+        {
+            // Dispose your objects here as before.
         }
 
         private void addFile_Click(object sender, RoutedEventArgs e)
@@ -162,6 +167,16 @@ namespace pdbdownloader
             for (int i = PdbItems.Count - 1; i >= 0; i--)
             {
                 ((ObservableCollection<PdbItem>)PdbListView.ItemsSource).Remove((PdbItem)PdbItems[i]);
+            }
+        }
+
+        private void openDownloadFolder_Click(object sender, RoutedEventArgs e)
+        {
+            System.Collections.IList PdbItems = PdbListView.SelectedItems;
+            for (int i = PdbItems.Count - 1; i >= 0; i--)
+            {
+                string PdbPath = System.IO.Path.GetDirectoryName(((PdbItem)PdbItems[i]).PdbPath);
+                Process.Start("explorer.exe", PdbPath);
             }
         }
 
@@ -264,7 +279,8 @@ namespace pdbdownloader
                     StringBuilder sb = new StringBuilder(m_Items[m_DownloadIndex].PdbPath);
                     sb[sb.Length - 1] = '_';
                     statusBarText.Dispatcher.Invoke(new Action(() => { statusBarText.Content = "Download: " + m_Items[m_DownloadIndex].PdbUrl; }));
-
+                    m_Items[m_DownloadIndex].ProgressColor = new SolidColorBrush(Color.FromArgb(0xff, 0x01, 0xd3, 0x28));
+                    m_Items[m_DownloadIndex].ProgressColor.Freeze();
                     m_Downloader.DownloadFileAsync(new Uri(m_Items[m_DownloadIndex].PdbUrl), sb.ToString(), m_DownloadIndex);
 
                     while (!ev.WaitOne(1000))
@@ -320,7 +336,6 @@ namespace pdbdownloader
                 HandleOpenFile(it);
             }
         }
-
     }
 
 
@@ -407,7 +422,7 @@ namespace pdbdownloader
 
         protected override WebRequest GetWebRequest(Uri address)
         {
-            var request = base.GetWebRequest(address);
+            WebRequest request = (WebRequest)base.GetWebRequest(address);
             if (request != null)
             {
                 request.Timeout = this.Timeout;
