@@ -1,0 +1,21 @@
+version: 1.0.0.1.{build}
+configuration: Release
+build:
+  project: pdbdownloader_v15.sln
+  verbosity: minimal
+after_build:
+- cmd: >-
+    mkdir bin
+
+    copy pdbdownloader\bin\Release\pdbdownloader.exe bin\pdbdownloader.exe
+
+    7z a -tzip pdbdownloader.zip bin\*
+artifacts:
+- path: pdbdownloader.zip
+  name: pdbdownloader.zip
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: xK4ZMxqQqd+NwhVJcXWTSQAryb1l8EQ7f0acKbyEVCygO/VEP9byuCj7v/YLSClf
+  artifact: pdbdownloader.zip
+  draft: true
