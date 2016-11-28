@@ -56,13 +56,20 @@ namespace pdbdownloader
 
     public partial class MainWindow : Window, IDisposable
     {
-        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool Wow64DisableWow64FsRedirection(ref IntPtr ptr);
 
-        [DllImport("dbghelp", CharSet = CharSet.Unicode)]
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool Wow64RevertWow64FsRedirection(IntPtr ptr);
+
+        [DllImport("dbghelp.dll", CharSet = CharSet.Unicode)]
         static extern bool SymSrvGetFileIndexInfoW(String file, ref SYMSRV_INDEX_INFO info, uint flags);
 
         public MainWindow()
         {
+            IntPtr wow64Value = IntPtr.Zero;
+            Wow64DisableWow64FsRedirection(ref wow64Value);
+
             InitializeComponent();
             statusBarText.Content = "Ready";
             PdbListView.ItemsSource = m_Items;
