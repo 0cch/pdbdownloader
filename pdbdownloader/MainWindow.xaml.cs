@@ -260,23 +260,41 @@ namespace pdbdownloader
                         }
                         else if (e.Error != null)
                         {
-                            m_Items[(int)e.UserState].ProgressColor = Brushes.Red;
+                            if (m_Items[(int)e.UserState].PdbType == 0)
+                            {
+                                m_Items[(int)e.UserState].PdbType = 1;
+                                StringBuilder newUrl = new StringBuilder(m_Items[m_DownloadIndex].PdbUrl);
+                                newUrl[newUrl.Length - 1] = 'b';
+                                statusBarText.Dispatcher.Invoke(new Action(() => { statusBarText.Content = "Download: " + newUrl.ToString(); }));
+                                m_Items[m_DownloadIndex].ProgressColor = new SolidColorBrush(Color.FromArgb(0xff, 0x01, 0xd3, 0x28));
+                                m_Items[m_DownloadIndex].ProgressColor.Freeze();
+                                m_Downloader.DownloadFileAsync(new Uri(newUrl.ToString()), m_Items[m_DownloadIndex].PdbPath, m_DownloadIndex);
+                                return;
+                            }
+                            else
+                            {
+                                m_Items[(int)e.UserState].ProgressColor = Brushes.Red;
+                            }
+                            
                         }
                         else
                         {
-                            StringBuilder cab = new StringBuilder(m_Items[(int)e.UserState].PdbPath);
-                            cab[cab.Length - 1] = '_';
+                            if (m_Items[(int)e.UserState].PdbType == 0)
+                            {
+                                StringBuilder cab = new StringBuilder(m_Items[(int)e.UserState].PdbPath);
+                                cab[cab.Length - 1] = '_';
 
-                            Process process = new Process();
-                            process.StartInfo.FileName = "expand.exe";
-                            process.StartInfo.Arguments = "expand.exe -R " + cab.ToString();
-                            process.StartInfo.CreateNoWindow = true;
-                            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                            process.Start();
-                            process.WaitForExit();
-                            File.Delete(cab.ToString());
+                                Process process = new Process();
+                                process.StartInfo.FileName = "expand.exe";
+                                process.StartInfo.Arguments = "expand.exe -R " + cab.ToString();
+                                process.StartInfo.CreateNoWindow = true;
+                                process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                                process.Start();
+                                process.WaitForExit();
+                                File.Delete(cab.ToString());
 
-                            m_Items[(int)e.UserState].ProgressColor = Brushes.Blue;
+                                m_Items[(int)e.UserState].ProgressColor = Brushes.Blue;
+                            }
                         }
 
                         ev.Set();
@@ -397,12 +415,19 @@ namespace pdbdownloader
             get { return pdbUrl; }
             set { pdbUrl = value; }
         }
+        private int pdbType;
+        public int PdbType
+        {
+            get { return pdbType; }
+            set { pdbType = value; }
+        }
         public PdbItem(string filePath, string pdbPath, string pdbUrl, double progress)
         {
             PdbPath = pdbPath;
             FilePath = filePath;
             ProgressValue = progress;
             PdbUrl = pdbUrl;
+            pdbType = 0;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
