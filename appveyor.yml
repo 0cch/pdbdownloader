@@ -16,6 +16,6 @@ artifacts:
 deploy:
 - provider: GitHub
   auth_token:
-    secure: k5ZMdzYHMuME+OTz4HYiQDZT+eO4MOSwGwbNYDggcfKiycskHr2Nc7qsWoHwLc1s
+    secure: 3gx7eB6yX/XkzM1PW4XWkci1cNPIjwoY1+VnDlXuM93h45FXtahZQfhfiaOhIUAl
   artifact: pdbdownloader.zip
   draft: true
