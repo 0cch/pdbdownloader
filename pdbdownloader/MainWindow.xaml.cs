@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -131,7 +131,7 @@ namespace pdbdownloader
             string PdbPath = String.Format("{0}\\{1}\\{2}{3}\\{4}",
                 m_SymbolDir, info.pdbfile, info.guid.ToString("N").ToUpper(), info.age.ToString("X"), info.pdbfile);
 
-            string DownloadUrl = String.Format("http://msdl.microsoft.com/download/symbols/{0}/{1}{2}/{3}",
+            string DownloadUrl = String.Format("https://msdl.microsoft.com/download/symbols/{0}/{1}{2}/{3}",
                 info.pdbfile, info.guid.ToString("N").ToUpper(), info.age.ToString("X"), cab);
 
             PdbItem item = new PdbItem(path, PdbPath, DownloadUrl, 0);
@@ -245,8 +245,10 @@ namespace pdbdownloader
                     {
                         statusBarText.Dispatcher.Invoke(new Action(() =>
                         {
-                            statusBarText.Content = "Download: " + String.Format("{0}/{1}({2}%) ",
+                            if (m_DownloadIndex < m_Items.Count) {
+                                statusBarText.Content = "Download: " + String.Format("{0}/{1}({2}%) ",
                                 e.BytesReceived, e.TotalBytesToReceive, e.ProgressPercentage) + m_Items[m_DownloadIndex].PdbUrl;
+                            }
                         }));
 
                         m_Items[(int)e.UserState].ProgressValue = e.ProgressPercentage;
