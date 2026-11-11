@@ -8,11 +8,11 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("pdbdownloader")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Download public PDB symbols from the Microsoft symbol server")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("0CCh")]
 [assembly: AssemblyProduct("pdbdownloader")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2016 nightxie")]
+[assembly: AssemblyCopyright("Copyright © 2016 0CCh")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -53,3 +53,4 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.2")]
 [assembly: AssemblyFileVersion("1.0.0.2")]
+[assembly: AssemblyInformationalVersion("1.0.0.2")]

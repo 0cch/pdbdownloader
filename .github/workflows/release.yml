@@ -1,0 +1,153 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build and publish release
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Resolve and increment version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $pattern = '^v(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:\.(?<revision>0|[1-9]\d*))?$'
+          if ($tag -notmatch $pattern) {
+              throw "Release tag '$tag' must use the format vMajor.Minor.Patch or vMajor.Minor.Patch.Revision."
+          }
+
+          $major = [int]$Matches['major']
+          $minor = [int]$Matches['minor']
+          $patch = [int]$Matches['patch']
+          $revision = if ($Matches['revision']) {
+              [int]$Matches['revision']
+          } else {
+              [int]$env:GITHUB_RUN_NUMBER
+          }
+
+          if ($revision -gt 65534) {
+              $revision = $revision % 65535
+          }
+
+          foreach ($part in @($major, $minor, $patch, $revision)) {
+              if ($part -lt 0 -or $part -gt 65534) {
+                  throw "Assembly version components must be between 0 and 65534."
+              }
+          }
+
+          $releaseVersion = $tag.Substring(1)
+          $assemblyVersion = if ($Matches['revision']) {
+              $releaseVersion
+          } else {
+              "$releaseVersion.$revision"
+          }
+          $assemblyInfoPath = "pdbdownloader\Properties\AssemblyInfo.cs"
+          $assemblyInfo = Get-Content -LiteralPath $assemblyInfoPath -Raw
+
+          $assemblyInfo = $assemblyInfo -replace '\[assembly: AssemblyVersion\("[^"]+"\)\]', ('[assembly: AssemblyVersion("' + $assemblyVersion + '")]')
+          $assemblyInfo = $assemblyInfo -replace '\[assembly: AssemblyFileVersion\("[^"]+"\)\]', ('[assembly: AssemblyFileVersion("' + $assemblyVersion + '")]')
+
+          if ($assemblyInfo -match '\[assembly: AssemblyInformationalVersion\("[^"]+"\)\]') {
+              $assemblyInfo = $assemblyInfo -replace '\[assembly: AssemblyInformationalVersion\("[^"]+"\)\]', ('[assembly: AssemblyInformationalVersion("' + $assemblyVersion + '")]')
+          } else {
+              $assemblyInfo += "`r`n" + '[assembly: AssemblyInformationalVersion("' + $assemblyVersion + '")]' + "`r`n"
+          }
+
+          Set-Content -LiteralPath $assemblyInfoPath -Value $assemblyInfo -Encoding utf8
+
+          "RELEASE_VERSION=$releaseVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "ASSEMBLY_VERSION=$assemblyVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PACKAGE_NAME=pdbdownloader-$releaseVersion-win-x86.zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          Write-Host "Release version: $releaseVersion"
+          Write-Host "Assembly version: $assemblyVersion"
+
+      - name: Build Release x86
+        shell: pwsh
+        run: |
+          msbuild pdbdownloader_v15.sln `
+            /t:Rebuild `
+            /p:Configuration=Release `
+            /p:Platform=x86 `
+            /p:TreatWarningsAsErrors=true `
+            /m `
+            /v:minimal
+
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $staging = "artifacts\staging"
+          New-Item -ItemType Directory -Force -Path $staging | Out-Null
+
+          Copy-Item -LiteralPath "pdbdownloader\bin\Release\pdbdownloader.exe" -Destination $staging
+          Copy-Item -LiteralPath "pdbdownloader\bin\Release\pdbdownloader.exe.config" -Destination $staging
+          Copy-Item -LiteralPath "README.md" -Destination $staging
+          Copy-Item -LiteralPath "LICENSE" -Destination $staging
+
+          $packagePath = Join-Path "artifacts" $env:PACKAGE_NAME
+          Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $packagePath -CompressionLevel Optimal -Force
+
+          $hash = (Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $env:PACKAGE_NAME" | Set-Content -LiteralPath ($packagePath + ".sha256") -Encoding ascii
+
+          Get-ChildItem -LiteralPath "artifacts" | Select-Object Name, Length
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_NAME }}
+          path: artifacts/*
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $packagePath = "artifacts\$env:PACKAGE_NAME"
+          $checksumPath = "$packagePath.sha256"
+          $title = "PDB Downloader $env:RELEASE_VERSION"
+
+          gh release view $tag --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+              gh release upload $tag $packagePath $checksumPath --repo "${{ github.repository }}" --clobber
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+              gh release edit $tag --repo "${{ github.repository }}" --title $title --latest
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          else {
+              gh release create $tag $packagePath $checksumPath `
+                --repo "${{ github.repository }}" `
+                --title $title `
+                --generate-notes `
+                --verify-tag `
+                --latest
+
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }

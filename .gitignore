@@ -1,0 +1,22 @@
+# Build and release output
+artifacts/
+bin/
+obj/
+pdbdownloader/bin/
+pdbdownloader/obj/
+
+# Visual Studio user state
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local settings
+pdbdownloader.ini
+pdbdownloader/pdbdownloader.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.part

@@ -1,54 +1,317 @@
 ﻿<Window x:Class="pdbdownloader.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PdbDownloader" Height="545" Width="843" WindowStyle="SingleBorderWindow" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
+        Title="PDB Downloader"
+        Width="1120"
+        Height="720"
+        MinWidth="920"
+        MinHeight="620"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource AppBackgroundBrush}"
+        FontFamily="Segoe UI"
+        PreviewKeyDown="MainWindow_PreviewKeyDown">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo />
+    </Window.TaskbarItemInfo>
+
+    <Window.Resources>
+        <Style x:Key="DataGridHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style x:Key="DataGridRowStyle" TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="MinHeight" Value="58" />
+            <Setter Property="BorderBrush" Value="#F1F5F9" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F8FAFC" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#EFF6FF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DataGridCellStyle" TargetType="{x:Type DataGridCell}">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="23" />
-            <RowDefinition Height="362*" />
-            <RowDefinition Height="25" />
+            <RowDefinition Height="76" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="36" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-        </Grid.ColumnDefinitions>
-        <Menu Name="MainMenu">
-            <MenuItem Header="_File">
-                <MenuItem Header="_Add File" Click="addFile_Click" />
-                <MenuItem Header="_Delete File" Click="deleteFile_Click" />
-                <MenuItem Header="_Set Symbol Path" Click="setSymbolPath_Click" />
-                <MenuItem Header="_Exit" Click="exit_Click"/>
-            </MenuItem>
-            <MenuItem Name="startMenuItem" Header="_Start" Click="start_Click"/>
-            <MenuItem Name="stopMenuItem" Header="S_top" IsEnabled="False" Click="stop_Click"/>
-        </Menu>
-        <ListView Grid.Row="1" Name="PdbListView" AllowDrop="True" Drop="PdbListView_Drop">
-            <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="_Add File" Click="addFile_Click" />
-                    <MenuItem Header="_Delete File" Click="deleteFile_Click" />
-                    <MenuItem Header="_Open Download Folder" Click="openDownloadFolder_Click" />
-                </ContextMenu>
-            </ListView.ContextMenu>
-            <ListView.Resources>
-                <Style TargetType="{x:Type GridViewColumnHeader}">
-                    <Setter Property="HorizontalContentAlignment" Value="Left" />
-                </Style>
-            </ListView.Resources>
-            <ListView.View>
-                <GridView AllowsColumnReorder="True">
-                    <GridViewColumn Header="File path" Width="300" DisplayMemberBinding="{Binding Path=FilePath}" />
-                    <GridViewColumn Header="Pdb path" Width="300" DisplayMemberBinding="{Binding Path=PdbPath}" />
-                    <GridViewColumn Header="Progress" Width="120">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <ProgressBar Height="20" Value="{Binding Path=ProgressValue}" Minimum="0" SmallChange="1" Width="100" Foreground="{Binding Path=ProgressColor}"></ProgressBar>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <StatusBar Grid.Row="2" Name="statusBar1">
-            <StatusBarItem Name="statusBarText" Content="" />
-        </StatusBar>
+
+        <Border Grid.Row="0" Background="{StaticResource HeaderBrush}">
+            <Grid Margin="22,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="PDB Downloader"
+                               Foreground="White"
+                               FontSize="23"
+                               FontWeight="SemiBold" />
+                    <TextBlock Text="Download public symbols from Microsoft-compatible symbol servers"
+                               Foreground="{StaticResource HeaderMutedBrush}"
+                               FontSize="12"
+                               Margin="0,3,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="AddFilesButton" Content="Add files" Style="{StaticResource HeaderButtonStyle}" Click="addFile_Click" Margin="0,0,8,0" />
+                    <Button x:Name="AddFolderButton" Content="Add folder" Style="{StaticResource HeaderButtonStyle}" Click="addFolder_Click" Margin="0,0,8,0" />
+                    <Button x:Name="SettingsButton" Content="Settings" Style="{StaticResource HeaderButtonStyle}" Click="settings_Click" Margin="0,0,16,0" />
+                    <Border Width="1" Background="#374151" Margin="0,6,16,6" />
+                    <Button x:Name="StartButton" Content="Start download" Style="{StaticResource HeaderPrimaryButtonStyle}" Click="start_Click" Margin="0,0,8,0" />
+                    <Button x:Name="StopButton" Content="Stop" Style="{StaticResource HeaderButtonStyle}" IsEnabled="False" Click="stop_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="248" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="SYMBOL DIRECTORY" Foreground="{StaticResource MutedTextBrush}" FontSize="10" FontWeight="SemiBold" />
+                        <Border Background="#F8FAFC" CornerRadius="8" Padding="10,9" Margin="0,7,0,0">
+                            <TextBlock x:Name="SymbolPathText" Text="Not configured" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" MaxHeight="54" ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text}" />
+                        </Border>
+                        <Button Content="Change settings" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Left" Padding="0,7,0,0" Click="settings_Click" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Margin="0,20,0,0">
+                        <TextBlock Text="SYMBOL SERVER" Foreground="{StaticResource MutedTextBrush}" FontSize="10" FontWeight="SemiBold" />
+                        <TextBlock x:Name="SymbolServerText" Text="Microsoft Public Symbol Server" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" Margin="0,7,0,0" ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Margin="0,22,0,0">
+                        <TextBlock Text="TASK SUMMARY" Foreground="{StaticResource MutedTextBrush}" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="66" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="66" />
+                            </Grid.RowDefinitions>
+                            <Border Background="#F8FAFC" CornerRadius="8" Padding="10">
+                                <StackPanel>
+                                    <TextBlock x:Name="TotalCountText" Text="0" FontSize="21" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                                    <TextBlock Text="Total" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Background="#F8FAFC" CornerRadius="8" Padding="10">
+                                <StackPanel>
+                                    <TextBlock x:Name="CompletedCountText" Text="0" FontSize="21" FontWeight="SemiBold" Foreground="{StaticResource SuccessBrush}" />
+                                    <TextBlock Text="Completed" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="8" Padding="10">
+                                <StackPanel>
+                                    <TextBlock x:Name="WaitingCountText" Text="0" FontSize="21" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
+                                    <TextBlock Text="Remaining" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="2" Grid.Column="2" Background="#F8FAFC" CornerRadius="8" Padding="10">
+                                <StackPanel>
+                                    <TextBlock x:Name="FailedCountText" Text="0" FontSize="21" FontWeight="SemiBold" Foreground="{StaticResource DangerBrush}" />
+                                    <TextBlock Text="Failed" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4">
+                        <Button Content="Open download folder" Style="{StaticResource SecondaryButtonStyle}" Click="openDownloadFolder_Click" />
+                        <Button x:Name="ClearCompletedButton" Content="Clear completed" Style="{StaticResource GhostButtonStyle}" Margin="0,8,0,0" Click="clearCompleted_Click" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="64" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="260" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="145" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid>
+                                <TextBox x:Name="SearchTextBox" Style="{StaticResource FormTextBoxStyle}" VerticalAlignment="Center" TextChanged="filter_Changed" ToolTip="Search file name or path" />
+                                <TextBlock Text="Search files or paths" Foreground="#94A3B8" FontSize="12" Margin="11,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <ComboBox x:Name="FilterComboBox" Grid.Column="2" SelectedIndex="0" VerticalAlignment="Center" Padding="8,6" Background="White" BorderBrush="#CBD5E1" SelectionChanged="filter_Changed">
+                                <ComboBoxItem Content="All tasks" Tag="All" />
+                                <ComboBoxItem Content="Pending" Tag="Pending" />
+                                <ComboBoxItem Content="Downloading" Tag="Downloading" />
+                                <ComboBoxItem Content="Completed" Tag="Completed" />
+                                <ComboBoxItem Content="Failed" Tag="Failed" />
+                                <ComboBoxItem Content="Cancelled" Tag="Cancelled" />
+                            </ComboBox>
+                            <TextBlock Grid.Column="3" Text="Ctrl+O add · Delete remove" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" Margin="6,0,8,0" />
+                            <Button x:Name="RetrySelectedButton" Grid.Column="4" Content="Retry selected" Style="{StaticResource SecondaryButtonStyle}" Padding="12,7" Click="retrySelected_Click" />
+                            <Button x:Name="RemoveSelectedButton" Grid.Column="6" Content="Remove" Style="{StaticResource SecondaryButtonStyle}" Padding="12,7" Click="deleteFile_Click" />
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="1">
+                        <DataGrid x:Name="PdbDataGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="None"
+                                  BorderThickness="0"
+                                  Background="White"
+                                  RowHeaderWidth="0"
+                                  SelectionMode="Extended"
+                                  SelectionUnit="FullRow"
+                                  AllowDrop="True"
+                                  Drop="PdbListView_Drop"
+                                  MouseDoubleClick="PdbDataGrid_MouseDoubleClick"
+                                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                                  RowStyle="{StaticResource DataGridRowStyle}"
+                                  CellStyle="{StaticResource DataGridCellStyle}">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Retry selected" Click="retrySelected_Click" />
+                                    <MenuItem Header="Open download folder" Click="openDownloadFolder_Click" />
+                                    <MenuItem Header="Copy PDB path" Click="copyPdbPath_Click" />
+                                    <MenuItem Header="Copy compressed URL" Click="copyUrl_Click" />
+                                    <Separator />
+                                    <MenuItem Header="Remove selected" Click="deleteFile_Click" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="FILE" Width="*" MinWidth="250" SortMemberPath="PdbFileName">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="30" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="17" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding PdbFileName}" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" />
+                                                    <TextBlock Text="{Binding FilePath}" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="STATUS" Width="120" SortMemberPath="State">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource StatusBadgeStyle}" ToolTip="{Binding ErrorMessage}">
+                                                <TextBlock Text="{Binding Status}" Style="{StaticResource StatusBadgeTextStyle}" TextTrimming="CharacterEllipsis" MaxWidth="90" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="PROGRESS" Width="160" SortMemberPath="ProgressValue">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="0,6">
+                                                <ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" Style="{StaticResource ModernProgressBarStyle}" Foreground="{Binding ProgressColor}" />
+                                                <TextBlock Text="{Binding ProgressValue, StringFormat={}{0:0}%}" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" HorizontalAlignment="Right" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="PDB PATH" Binding="{Binding PdbPath}" Width="230" IsReadOnly="True">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="ToolTip" Value="{Binding PdbPath}" />
+                                            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="Margin" Value="12,0,0,0" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Grid x:Name="EmptyStatePanel" Background="White">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="330">
+                                <TextBlock Text="&#xE8E5;" FontFamily="Segoe MDL2 Assets" FontSize="44" Foreground="#93C5FD" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="EmptyTitleText" Text="Drop PE files or folders here" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center" Margin="0,14,0,5" />
+                                <TextBlock x:Name="EmptyDescriptionText" Text="Add executables manually, or drag a folder to scan it recursively." TextAlignment="Center" TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" />
+                                <StackPanel x:Name="EmptyActionsPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
+                                    <Button Content="Add files" Style="{StaticResource PrimaryButtonStyle}" Click="addFile_Click" Margin="0,0,8,0" />
+                                    <Button Content="Add folder" Style="{StaticResource SecondaryButtonStyle}" Click="addFolder_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="18,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="statusBarText" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="1" Text="GPL-3.0 · Microsoft public symbols" VerticalAlignment="Center" Foreground="#94A3B8" FontSize="10.5" />
+            </Grid>
+        </Border>
     </Grid>
 </Window>
