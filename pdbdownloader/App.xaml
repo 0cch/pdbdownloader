@@ -20,7 +20,10 @@
             <Setter Property="Background" Value="{StaticResource AccentBrush}" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="MinHeight" Value="34" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="11.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
@@ -56,7 +59,10 @@
             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="MinHeight" Value="34" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="FontSize" Value="11.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
@@ -90,6 +96,8 @@
         <Style x:Key="GhostButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SecondaryButtonStyle}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0,6" />
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
         </Style>
 
@@ -100,7 +108,7 @@
         </Style>
 
         <Style x:Key="HeaderPrimaryButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Padding" Value="18,9" />
+            <Setter Property="Padding" Value="14,0" />
         </Style>
 
         <Style x:Key="CardBorderStyle" TargetType="{x:Type Border}">
@@ -116,7 +124,9 @@
             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -125,8 +135,9 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="True">
@@ -139,6 +150,17 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="FormComboBoxStyle" TargetType="{x:Type ComboBox}">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
         <Style x:Key="ModernProgressBarStyle" TargetType="{x:Type ProgressBar}">
@@ -165,7 +187,7 @@
 
         <Style x:Key="StatusBadgeStyle" TargetType="{x:Type Border}">
             <Setter Property="Background" Value="#F1F5F9" />
-            <Setter Property="Padding" Value="9,4" />
+            <Setter Property="Padding" Value="7,4" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -186,7 +208,7 @@
         </Style>
 
         <Style x:Key="StatusBadgeTextStyle" TargetType="{x:Type TextBlock}">
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="11.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="#475569" />
             <Style.Triggers>

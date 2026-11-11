@@ -4,8 +4,8 @@
         Title="PDB Downloader"
         Width="1120"
         Height="720"
-        MinWidth="920"
-        MinHeight="620"
+        MinWidth="960"
+        MinHeight="640"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource AppBackgroundBrush}"
         FontFamily="Segoe UI"
@@ -27,7 +27,7 @@
         </Style>
         <Style x:Key="DataGridRowStyle" TargetType="{x:Type DataGridRow}">
             <Setter Property="Background" Value="White" />
-            <Setter Property="MinHeight" Value="58" />
+            <Setter Property="MinHeight" Value="56" />
             <Setter Property="BorderBrush" Value="#F1F5F9" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Style.Triggers>
@@ -41,7 +41,7 @@
         </Style>
         <Style x:Key="DataGridCellStyle" TargetType="{x:Type DataGridCell}">
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Padding" Value="12,6" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         </Style>
@@ -49,13 +49,13 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="76" />
+            <RowDefinition Height="72" />
             <RowDefinition Height="*" />
             <RowDefinition Height="36" />
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{StaticResource HeaderBrush}">
-            <Grid Margin="22,0">
+            <Grid Margin="18,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -161,7 +161,7 @@
             <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="0">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="64" />
+                        <RowDefinition Height="52" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -191,7 +191,7 @@
                                     </TextBlock.Style>
                                 </TextBlock>
                             </Grid>
-                            <ComboBox x:Name="FilterComboBox" Grid.Column="2" SelectedIndex="0" VerticalAlignment="Center" Padding="8,6" Background="White" BorderBrush="#CBD5E1" SelectionChanged="filter_Changed">
+                            <ComboBox x:Name="FilterComboBox" Grid.Column="2" SelectedIndex="0" VerticalAlignment="Center" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="filter_Changed">
                                 <ComboBoxItem Content="All tasks" Tag="All" />
                                 <ComboBoxItem Content="Pending" Tag="Pending" />
                                 <ComboBoxItem Content="Downloading" Tag="Downloading" />
@@ -199,9 +199,9 @@
                                 <ComboBoxItem Content="Failed" Tag="Failed" />
                                 <ComboBoxItem Content="Cancelled" Tag="Cancelled" />
                             </ComboBox>
-                            <TextBlock Grid.Column="3" Text="Ctrl+O add · Delete remove" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" Margin="6,0,8,0" />
-                            <Button x:Name="RetrySelectedButton" Grid.Column="4" Content="Retry selected" Style="{StaticResource SecondaryButtonStyle}" Padding="12,7" Click="retrySelected_Click" />
-                            <Button x:Name="RemoveSelectedButton" Grid.Column="6" Content="Remove" Style="{StaticResource SecondaryButtonStyle}" Padding="12,7" Click="deleteFile_Click" />
+
+                            <Button x:Name="RetrySelectedButton" Grid.Column="4" Content="Retry selected" Style="{StaticResource SecondaryButtonStyle}" Click="retrySelected_Click" />
+                            <Button x:Name="RemoveSelectedButton" Grid.Column="6" Content="Remove" Style="{StaticResource SecondaryButtonStyle}" Click="deleteFile_Click" />
                         </Grid>
                     </Border>
 
@@ -220,6 +220,8 @@
                                   RowHeaderWidth="0"
                                   SelectionMode="Extended"
                                   SelectionUnit="FullRow"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto"
                                   AllowDrop="True"
                                   Drop="PdbListView_Drop"
                                   MouseDoubleClick="PdbDataGrid_MouseDoubleClick"
@@ -237,18 +239,20 @@
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="FILE" Width="*" MinWidth="250" SortMemberPath="PdbFileName">
+                                <DataGridTemplateColumn Header="FILE" Width="2*" MinWidth="220" SortMemberPath="PdbFileName">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Grid>
+                                            <Grid VerticalAlignment="Center">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="30" />
+                                                    <ColumnDefinition Width="36" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="17" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
-                                                <StackPanel Grid.Column="1">
-                                                    <TextBlock Text="{Binding PdbFileName}" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" />
-                                                    <TextBlock Text="{Binding FilePath}" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" Margin="0,2,0,0" />
+                                                <Border Width="28" Height="28" CornerRadius="7" Background="#EFF6FF" VerticalAlignment="Center">
+                                                    <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding PdbFileName}" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" LineHeight="17" LineStackingStrategy="BlockLineHeight" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" />
+                                                    <TextBlock Text="{Binding FilePath}" Foreground="{StaticResource MutedTextBrush}" FontSize="11" LineHeight="15" LineStackingStrategy="BlockLineHeight" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" Margin="0,2,0,0" />
                                                 </StackPanel>
                                             </Grid>
                                         </DataTemplate>
@@ -257,29 +261,35 @@
                                 <DataGridTemplateColumn Header="STATUS" Width="120" SortMemberPath="State">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Style="{StaticResource StatusBadgeStyle}" ToolTip="{Binding ErrorMessage}">
-                                                <TextBlock Text="{Binding Status}" Style="{StaticResource StatusBadgeTextStyle}" TextTrimming="CharacterEllipsis" MaxWidth="90" />
+                                            <Border Style="{StaticResource StatusBadgeStyle}" MinWidth="84" Margin="8,0,0,0" ToolTip="{Binding ErrorMessage}">
+                                                <TextBlock Text="{Binding Status}" Style="{StaticResource StatusBadgeTextStyle}" TextAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="90" />
                                             </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="PROGRESS" Width="160" SortMemberPath="ProgressValue">
+                                <DataGridTemplateColumn Header="PROGRESS" Width="150" SortMemberPath="ProgressValue">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel VerticalAlignment="Center" Margin="0,6">
-                                                <ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" Style="{StaticResource ModernProgressBarStyle}" Foreground="{Binding ProgressColor}" />
-                                                <TextBlock Text="{Binding ProgressValue, StringFormat={}{0:0}%}" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" HorizontalAlignment="Right" Margin="0,4,0,0" />
-                                            </StackPanel>
+                                            <Grid VerticalAlignment="Center" Margin="8,0,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="38" />
+                                                </Grid.ColumnDefinitions>
+                                                <ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" Style="{StaticResource ModernProgressBarStyle}" Foreground="{Binding ProgressColor}" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="{Binding ProgressValue, StringFormat={}{0:0}%}" Foreground="{StaticResource MutedTextBrush}" FontSize="10.5" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                            </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="PDB PATH" Binding="{Binding PdbPath}" Width="230" IsReadOnly="True">
+                                <DataGridTextColumn Header="PDB PATH" Binding="{Binding PdbPath}" Width="*" MinWidth="150" IsReadOnly="True">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="{x:Type TextBlock}">
                                             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                             <Setter Property="ToolTip" Value="{Binding PdbPath}" />
                                             <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
                                             <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="FontFamily" Value="Consolas" />
+                                            <Setter Property="FontSize" Value="10.5" />
                                             <Setter Property="Margin" Value="12,0,0,0" />
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
